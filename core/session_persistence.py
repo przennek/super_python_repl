@@ -1,6 +1,7 @@
 import atexit
 import multiprocessing
 import os
+from extensions.trashcan import *
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
