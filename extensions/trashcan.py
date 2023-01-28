@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Invoices:
+class Invoice:
     name: str
     type: str
     date: str
@@ -10,3 +10,4 @@ class Invoices:
 
 def session_state() -> str:
     return "ACTIVE!"
+
