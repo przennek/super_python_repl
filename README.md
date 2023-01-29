@@ -1,6 +1,6 @@
-## instalation
-1. Put src/core/session_persistence.py into your .ipython/profile_default/startup location
-	eq. cp core/session_persistence.py ~/.ipython/profile_default/startup/.
+## Instalation
+1. Make sure you have Python installed
+2. run install_linux.sh
 
-## how to run this
-1. run src/start.sh
+## How to run this
+1. run start.sh
