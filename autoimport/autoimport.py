@@ -1,1 +1,1 @@
-# e.g. from extensions.finance.tools import *
+from extensions.finance.tools import *

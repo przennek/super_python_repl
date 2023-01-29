@@ -1,11 +1,13 @@
 import atexit
+import json
 import multiprocessing
 from multiprocessing import Queue
-from typing import Optional, Dict, List
+from typing import Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from core.pysize import get_size
+from methods import methods_dict
 
 shell_state = {}
 
@@ -118,11 +120,20 @@ def list_sessions():
           f"Optional[str] to load a session.")  # todo @1
 
 
-def status() -> Dict[str, List]:
-    return {
-        n: [
-            f"value: {str(globals()[n])[:47] + ('...' if len(str(globals()[n])) > 50 else '')}",
-            f"type: {type(globals()[n])}",
-            f"size: {get_size(globals()[n])} bytes"
-        ]
-        for n in globals() if __is_persistent_variable(n)}
+def status():
+    print(json.dumps(
+        {
+            n: [
+                f"value: {str(globals()[n])[:47] + ('...' if len(str(globals()[n])) > 50 else '')}",
+                f"type: {type(globals()[n])}",
+                f"size: {get_size(globals()[n])} bytes"
+            ]
+            for n in globals() if __is_persistent_variable(n)
+        },
+        indent=4,
+        sort_keys=True
+    ))
+
+
+def methods():
+    print(json.dumps(methods_dict, indent=4, sort_keys=True))
