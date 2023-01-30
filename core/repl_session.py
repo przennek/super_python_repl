@@ -88,6 +88,7 @@ def __save_session(q: Queue,
 
 
 def __start_session_tracking(session_name: Optional[str] = None):
+    global queue # todo delete after issue with long saving times is resolved
     queue = multiprocessing.Queue()
     p = multiprocessing.Process(target=__save_session, args=(queue, session_name,))
     p.start()
