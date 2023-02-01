@@ -1,9 +1,6 @@
 from __future__ import print_function
 
 import os.path
-import io
-import pandas as pd
-from typing import List
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -62,29 +59,3 @@ def get_google_sheet_service():
         return service
     except HttpError as err:
         print(err)
-
-
-def get_sheet_value(spreadsheet_id: str, range_name: str) -> pd.DataFrame:
-    try:
-        sheet = get_sheet()
-        # "A1:C2"
-        result = sheet.values().get(
-            spreadsheetId=spreadsheet_id,
-            range=range_name
-        ).execute()
-        rows = result.get('values', [])
-        csv = __to_csv(rows)
-        return pd.read_csv(io.StringIO(csv), sep=",", header=None)
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-        return error
-
-
-def __to_csv(sheet: List[List[str]]) -> str:
-    out = ""
-    for r in sheet:
-        for cv in r:
-            out += "," + f'"{cv}"'
-        out += "\n"
-    out = out.replace("\n,", "\n")[1:]
-    return out
