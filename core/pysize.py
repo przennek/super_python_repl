@@ -6,7 +6,7 @@ import sys
 logger = logging.getLogger(__name__)
 
 
-def get_size(obj, seen=None):
+def __get_size(obj, seen=None):
     """Recursively finds size of objects in bytes"""
     size = sys.getsizeof(obj)
     if seen is None:
@@ -22,19 +22,19 @@ def get_size(obj, seen=None):
             if '__dict__' in cls.__dict__:
                 d = cls.__dict__['__dict__']
                 if inspect.isgetsetdescriptor(d) or inspect.ismemberdescriptor(d):
-                    size += get_size(obj.__dict__, seen)
+                    size += __get_size(obj.__dict__, seen)
                 break
     if isinstance(obj, dict):
-        size += sum((get_size(v, seen) for v in obj.values()))
-        size += sum((get_size(k, seen) for k in obj.keys()))
+        size += sum((__get_size(v, seen) for v in obj.values()))
+        size += sum((__get_size(k, seen) for k in obj.keys()))
     elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
         try:
-            size += sum((get_size(i, seen) for i in obj))
+            size += sum((__get_size(i, seen) for i in obj))
         except TypeError:
             logging.exception(
                 "Unable to get size of %r. This may lead to incorrect sizes. Please report this error.",
                 obj)
     if hasattr(obj, '__slots__'):  # can have __slots__ with __dict__
-        size += sum(get_size(getattr(obj, s), seen) for s in obj.__slots__ if hasattr(obj, s))
+        size += sum(__get_size(getattr(obj, s), seen) for s in obj.__slots__ if hasattr(obj, s))
 
     return size

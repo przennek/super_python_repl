@@ -6,7 +6,7 @@ from typing import List, Optional
 import pandas as pd
 from googleapiclient.errors import HttpError
 
-from core.google_sheets_service import get_sheet
+from addons.googlesheets.google_sheets_service import get_sheet
 
 
 class SheetsCSV:

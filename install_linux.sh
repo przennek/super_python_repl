@@ -10,8 +10,6 @@ echo "Path cleaned:"
 ls $startup_path
 echo $startup_path
 cp -r ./core/*.py $startup_path
-cp -r ./core/model $startup_path
-cp -r ./extensions/ $startup_path
-cp ./autoimport/autoimport.py $startup_path
+cp -r ./addons $startup_path
 echo "Path loaded:"
 ls $startup_path

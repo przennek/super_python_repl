@@ -6,8 +6,7 @@ from typing import Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from core.pysize import get_size
-from methods import methods_dict
+from core.pysize import __get_size
 
 shell_state = {}
 
@@ -17,6 +16,57 @@ __default_history_path = "./sessions/session.history"
 __autosave_seconds = 10
 __state_comm_idle_secs = 1
 __session_persistence_variable_regex = "^(([A-Z]+_)+|[A-Z]+)+$"
+
+methods_dict = {
+    "core.repl_session": {
+        "status()": "displays persistent variables assigned to this session",
+        "methods()": "lists the available global methods",
+        "load_session(session_name: Optional[str])":
+            "loads or creates a new session given it's name. Session with no name is allowed.",
+        "list_sessions()": "lists the session names from available sessions. "
+                           "Default session is not included in the said list."
+    }
+}
+
+
+def load_session(session_name: Optional[str] = None):
+    global __nested_session
+    if not __nested_session:
+        __load_history(file_suffix=session_name)
+        __start_session_tracking(session_name=session_name)
+        __nested_session = True
+    else:
+        print("Nesting sessions is not supported.")
+
+
+def list_sessions():
+    # "./sessions/session.history"
+    import os
+    sessions = [n for n in os.listdir(os.path.dirname(__default_history_path))
+                if "history" in n and n != "session.history"]
+    session_names = [n.split("history")[1][1:] for n in sessions]
+
+    print(f"Available sessions: {session_names}. Use load_session(session_name: "
+          f"Optional[str] to load a session.")  # todo @1
+
+
+def status():
+    print(json.dumps(
+        {
+            n: [
+                f"value: {str(globals()[n])[:47] + ('...' if len(str(globals()[n])) > 50 else '')}",
+                f"type: {type(globals()[n])}",
+                f"size: {__get_size(globals()[n])} bytes"
+            ]
+            for n in globals() if __is_persistent_variable(n)
+        },
+        indent=4,
+        sort_keys=True
+    ))
+
+
+def methods():
+    print(json.dumps(methods_dict, indent=4, sort_keys=True))
 
 
 def __is_persistent_variable(variable_name: str) -> bool:
@@ -88,7 +138,7 @@ def __save_session(q: Queue,
 
 
 def __start_session_tracking(session_name: Optional[str] = None):
-    global queue # todo delete after issue with long saving times is resolved
+    global queue  # todo issue with long saving times
     queue = multiprocessing.Queue()
     p = multiprocessing.Process(target=__save_session, args=(queue, session_name,))
     p.start()
@@ -98,43 +148,3 @@ def __start_session_tracking(session_name: Optional[str] = None):
     scheduler.start()
 
     atexit.register(__notify_save, queue, scheduler)
-
-
-def load_session(session_name: Optional[str] = None):
-    global __nested_session
-    if not __nested_session:
-        __load_history(file_suffix=session_name)
-        __start_session_tracking(session_name=session_name)
-        __nested_session = True
-    else:
-        print("Nesting sessions is not supported.")
-
-
-def list_sessions():
-    # "./sessions/session.history"
-    import os
-    sessions = [n for n in os.listdir(os.path.dirname(__default_history_path))
-                if "history" in n and n != "session.history"]
-    session_names = [n.split("history")[1][1:] for n in sessions]
-
-    print(f"Available sessions: {session_names}. Use load_session(session_name: "
-          f"Optional[str] to load a session.")  # todo @1
-
-
-def status():
-    print(json.dumps(
-        {
-            n: [
-                f"value: {str(globals()[n])[:47] + ('...' if len(str(globals()[n])) > 50 else '')}",
-                f"type: {type(globals()[n])}",
-                f"size: {get_size(globals()[n])} bytes"
-            ]
-            for n in globals() if __is_persistent_variable(n)
-        },
-        indent=4,
-        sort_keys=True
-    ))
-
-
-def methods():
-    print(json.dumps(methods_dict, indent=4, sort_keys=True))
